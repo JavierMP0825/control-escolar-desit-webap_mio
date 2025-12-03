@@ -6,6 +6,7 @@ import { MatRadioChange } from '@angular/material/radio';
 import { AdministradoresService } from '../../services/administradores.service';
 import { MaestrosService } from '../../services/maestros.service';
 import { AlumnosService } from '../../services/alumnos.service';
+import { MateriasService } from 'src/app/services/materias.service';
 
 @Component({
   selector: 'app-registro-usuarios-screen',
@@ -24,6 +25,8 @@ export class RegistroUsuariosScreenComponent implements OnInit {
   public isAdmin:boolean = false;
   public isAlumno:boolean = false;
   public isMaestro:boolean = false;
+  public isMaterias: boolean = false;
+
 
   public tipo_user:string = "";
 
@@ -35,6 +38,7 @@ export class RegistroUsuariosScreenComponent implements OnInit {
     private administradoresService: AdministradoresService,
     private maestrosService: MaestrosService,
     private alumnosService: AlumnosService,
+    private materiasService: MateriasService
   ) { }
 
   ngOnInit(): void {
@@ -42,6 +46,7 @@ export class RegistroUsuariosScreenComponent implements OnInit {
     //Obtener de la URL el rol para saber cual editar
     if(this.activatedRoute.snapshot.params['rol'] != undefined){
       this.rol = this.activatedRoute.snapshot.params['rol'];
+      this.tipo_user = this.rol;
       console.log("Rol detectado: ", this.rol);
     }
 
@@ -77,7 +82,7 @@ export class RegistroUsuariosScreenComponent implements OnInit {
           alert("No se pudo obtener el administrador seleccionado");
         }
       );
-    }else if(this.rol == "maestro"){
+    }else if(this.rol == "maestros"){
       this.maestrosService.obtenerMaestroPorID(this.idUser).subscribe(
         (response) => {
           this.user = response;
@@ -87,43 +92,70 @@ export class RegistroUsuariosScreenComponent implements OnInit {
           this.user.last_name = response.user?.last_name || response.last_name;
           this.user.email = response.user?.email || response.email;
           this.user.tipo_usuario = this.rol;
-
-          if (typeof response.materias_json === "string") {
-          try {
-            this.user.materias_json = JSON.parse(response.materias_json);
-          } catch {
-            this.user.materias_json = [];
-          }
-        }
           this.isMaestro = true;
         }, (error) => {
           console.log("Error: ", error);
           alert("No se pudo obtener el maestro seleccionado");
         }
       );
-    }else if(this.rol == "alumno"){
-      // TODO: Implementar lógica para obtener alumno por ID
+    }else if(this.rol == "alumnos"){
+      this.alumnosService.obtenerAlumnoPorID(this.idUser).subscribe(
+        (response) => {
+          this.user = response;
+          console.log("Usuario original obtenido: ", this.user);
+          // Asignar datos, soportando respuesta plana o anidada
+          this.user.first_name = response.user?.first_name || response.first_name;
+          this.user.last_name = response.user?.last_name || response.last_name;
+          this.user.email = response.user?.email || response.email;
+          this.user.tipo_usuario = this.rol;
+          this.isAlumno = true;
+        }, (error) => {
+          console.log("Error: ", error);
+          alert("No se pudo obtener el alumno seleccionado");
+        }
+      );
+    }else if(this.rol == "materias"){
+      this.materiasService.obtenerMateriaPorID(this.idUser).subscribe(
+        (response) => {
+          this.user = response;
+          this.user.tipo_usuario = this.rol; // importante para el radio button
+          this.isMaterias = true;
+          console.log("Materia obtenida: ", this.user);
+        },
+        (error) => {
+          console.error("Error al obtener la materia: ", error);
+          alert("No se pudo obtener la materia seleccionada");
+        }
+      );
     }
-
   }
 
   public radioChange(event: MatRadioChange) {
-    console.log(event);
+    console.log(event.value);
     if(event.value == "administrador"){
       this.isAdmin = true;
       this.isAlumno = false;
       this.isMaestro = false;
+      this.isMaterias = false;
       this.tipo_user = "administrador";
-    }else if (event.value == "alumno"){
+    }else if (event.value == "alumnos"){
       this.isAdmin = false;
       this.isAlumno = true;
       this.isMaestro = false;
-      this.tipo_user = "alumno";
-    }else if (event.value == "maestro"){
+      this.isMaterias = false;
+      this.tipo_user = "alumnos";
+    }else if (event.value == "maestros"){
       this.isAdmin = false;
       this.isAlumno = false;
       this.isMaestro = true;
-      this.tipo_user = "maestro";
+      this.isMaterias = false;
+      this.tipo_user = "maestros";
+    } else if (event.value == "materias"){
+      this.isAdmin = false;
+      this.isAlumno = false;
+      this.isMaestro = false;
+      this.isMaterias = true;
+      this.tipo_user = "materias";
     }
   }
 

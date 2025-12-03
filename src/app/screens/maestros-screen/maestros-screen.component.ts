@@ -1,8 +1,10 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { EliminarUserModalComponent } from 'src/app/modals/eliminar-user-modal/eliminar-user-modal.component';
 import { FacadeService } from 'src/app/services/facade.service';
 import { MaestrosService } from 'src/app/services/maestros.service';
 
@@ -32,6 +34,7 @@ export class MaestrosScreenComponent implements OnInit, AfterViewInit {
     public facadeService: FacadeService,
     public maestrosService: MaestrosService,
     private router: Router,
+    public dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -90,7 +93,32 @@ export class MaestrosScreenComponent implements OnInit, AfterViewInit {
   }
 
   public delete(idUser: number) {
-    console.log("Eliminar maestro con ID:", idUser);
+    //Administrador puede eliminar cualquier maestro
+    //Maestro solo puede eliminarse a sí mismo
+    const userId = Number(this.facadeService.getUserId());
+    if (this.rol === "administrador" || (this.rol === "maestros" && userId === idUser)) {
+      //Si es administrador o es maestro, cumple la condición, se procede a eliminar
+      const dialogRef = this.dialog.open(EliminarUserModalComponent,{
+        data: {id: idUser, rol: 'maestros'}, //Se pasan valores a través del componente modal
+        height: '288px',
+        width: '328px'
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if(result.isDelete) {
+          console.log("Maestro  eliminado", idUser);
+          alert("Maestro eliminado correctamente.");
+          //Refrescar la pagina
+          window.location.reload();
+        } else {
+          alert("Maestro no se a podido eliminar.");
+          console.log("No se eliminó al maestro");
+        }
+
+      });
+    }else {
+      alert("No tienes permisos para eliminar a este maestro.");
+    }
   }
 }
 

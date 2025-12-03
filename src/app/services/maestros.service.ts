@@ -25,7 +25,7 @@ export class MaestrosService {
   public esquemaMaestro(){
     return {
       'rol':'',
-      'id_trabajador': '',
+      'clave_maestro': '',
       'first_name': '',
       'last_name': '',
       'email': '',
@@ -45,8 +45,8 @@ export class MaestrosService {
     console.log("Validando maestro... ", data);
     let error: any = [];
 
-    if(!this.validatorService.required(data["id_trabajador"])){
-      error["id_trabajador"] = this.errorService.required;
+    if(!this.validatorService.required(data["clave_maestro"])){
+      error["clave_maestro"] = this.errorService.required;
     }
 
     if(!this.validatorService.required(data["first_name"])){
@@ -162,5 +162,18 @@ export class MaestrosService {
       console.log("No se encontró el token del usuario");
     }
     return this.http.put<any>(`${environment.url_api}/maestros/`, data, { headers });
+  }
+
+  // Petición para eliminar un maestro
+  public eliminarMaestro(idMaestro: number): Observable<any> {
+    const token = this.facadeService.getSessionToken();
+    let headers: HttpHeaders;
+    if (token) {
+      headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token });
+    } else {
+      headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+      console.log("No se encontró el token del usuario");
+    }
+    return this.http.delete<any>(`${environment.url_api}/maestros/?id=${idMaestro}`, { headers });
   }
 }

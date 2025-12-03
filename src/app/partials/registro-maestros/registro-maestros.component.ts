@@ -3,6 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MaestrosService } from 'src/app/services/maestros.service';
 import { FacadeService } from 'src/app/services/facade.service';
 import { Location } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { ActualizarUserModalComponent } from 'src/app/modals/actualizar-user-modal/actualizar-user-modal.component';
 
 @Component({
   selector: 'app-registro-maestros',
@@ -53,7 +55,8 @@ export class RegistroMaestrosComponent implements OnInit {
     public activatedRoute: ActivatedRoute,
     private maestrosService: MaestrosService,
     private facadeService: FacadeService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -141,30 +144,48 @@ export class RegistroMaestrosComponent implements OnInit {
     });
   }
 
-  public actualizar(){
+  public abrirModalActualizar() {
+    const dialogRef = this.dialog.open(ActualizarUserModalComponent, {
+      data: {
+        id: this.idUser,
+        usuario: this.maestro,
+        rol: 'maestro'
+      },
+      width: '328px',
+      height: '288px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(result?.updated) {
+        this.actualizar();
+      }
+    });
+  }
+
+
+  public actualizar() {
     // Validación de los datos
     this.errors = {};
     this.errors = this.maestrosService.validarMaestro(this.maestro, this.editar);
-    if(Object.keys(this.errors).length > 0){
+
+    if (Object.keys(this.errors).length > 0) {
       return false;
     }
 
     // Ejecutamos el servicio de actualización
     this.maestrosService.actualizarMaestro(this.maestro).subscribe(
       (response) => {
-        // Redirigir o mostrar mensaje de éxito
         alert("Maestro actualizado exitosamente");
         console.log("Maestro actualizado: ", response);
         this.router.navigate(["maestros"]);
       },
       (error) => {
-        // Manejar errores de la API
         alert("Error al actualizar maestro");
         console.error("Error al actualizar maestro: ", error);
       }
     );
-
   }
+
 
   public changeFecha(event: any){
     const date = event.value instanceof Date ? event.value : new Date(event.value);

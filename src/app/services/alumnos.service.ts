@@ -171,4 +171,17 @@ export class AlumnosService {
     }
     return this.http.put<any>(`${environment.url_api}/alumnos/`, data, { headers });
   }
+
+  // Petición para eliminar un alumno
+  public eliminarAlumno(idAlumno: number): Observable<any> {
+    const token = this.facadeService.getSessionToken();
+    let headers: HttpHeaders;
+    if (token) {
+      headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token });
+    } else {
+      headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+      console.log("No se encontró el token del usuario");
+    }
+    return this.http.delete<any>(`${environment.url_api}/alumnos/?id=${idAlumno}`, { headers });
+  }
 }

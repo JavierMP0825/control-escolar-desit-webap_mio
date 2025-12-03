@@ -3,6 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FacadeService } from 'src/app/services/facade.service';
 import { Location } from '@angular/common';
 import { AdministradoresService } from 'src/app/services/administradores.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ActualizarUserModalComponent } from 'src/app/modals/actualizar-user-modal/actualizar-user-modal.component';
 
 @Component({
   selector: 'app-registro-admin',
@@ -31,7 +33,8 @@ export class RegistroAdminComponent implements OnInit {
     public activatedRoute: ActivatedRoute,
     private administradoresService: AdministradoresService,
     private facadeService: FacadeService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -114,30 +117,50 @@ export class RegistroAdminComponent implements OnInit {
     }
   }
 
-  public actualizar(){
+  public abrirModalActualizar() {
+  const dialogRef = this.dialog.open(ActualizarUserModalComponent, {
+    data: {
+      id: this.idUser,
+      usuario: this.admin,
+      rol: 'administrador'
+    },
+    width: '328px',
+    height: '288px'
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if(result?.updated) {
+      this.actualizar();
+    } else {
+      console.log("Actualización de admin cancelada.");
+    }
+  });
+}
+
+
+  public actualizar() {
     // Validación de los datos
     this.errors = {};
     this.errors = this.administradoresService.validarAdmin(this.admin, this.editar);
-    if(Object.keys(this.errors).length > 0){
+
+    if (Object.keys(this.errors).length > 0) {
       return false;
     }
 
     // Ejecutamos el servicio de actualización
     this.administradoresService.actualizarAdmin(this.admin).subscribe(
       (response) => {
-        // Redirigir o mostrar mensaje de éxito
-        alert("Administrador actualizado exitosamente");
-        console.log("Administrador actualizado: ", response);
+        alert("Admin actualizado exitosamente");
+        console.log("Admin actualizado: ", response);
         this.router.navigate(["administrador"]);
       },
       (error) => {
-        // Manejar errores de la API
         alert("Error al actualizar administrador");
         console.error("Error al actualizar administrador: ", error);
       }
     );
-
   }
+
 
   // Función para los campos solo de datos alfabeticos
   public soloLetras(event: KeyboardEvent) {
@@ -148,6 +171,14 @@ export class RegistroAdminComponent implements OnInit {
       !(charCode >= 97 && charCode <= 122) && // Letras minúsculas
       charCode !== 32                         // Espacio
     ) {
+      event.preventDefault();
+    }
+  }
+
+  public soloLetrasNumeros(event: KeyboardEvent) {
+    const char = event.key;
+    const regex = /^[A-Za-z0-9]$/;
+    if (!regex.test(char)) {
       event.preventDefault();
     }
   }

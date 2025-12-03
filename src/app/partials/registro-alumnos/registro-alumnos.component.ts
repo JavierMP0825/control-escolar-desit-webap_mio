@@ -2,6 +2,8 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { AlumnosService } from 'src/app/services/alumnos.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ActualizarUserModalComponent } from 'src/app/modals/actualizar-user-modal/actualizar-user-modal.component';
 
 @Component({
   selector: 'app-registro-alumnos',
@@ -13,118 +15,171 @@ export class RegistroAlumnosComponent implements OnInit {
   @Input() rol: string = "";
   @Input() datos_user: any = {};
 
-  //Para contraseñas
+  public alumno: any = {};
+  public token: string = "";
+  public errors: any = {};
+  public editar: boolean = false;
+  public idUser: Number = 0;
+
+  // Para contraseñas
   public hide_1: boolean = false;
   public hide_2: boolean = false;
   public inputType_1: string = 'password';
   public inputType_2: string = 'password';
 
-  public alumno:any= {};
-  public token: string = "";
-  public errors:any={};
-  public editar:boolean = false;
-  public idUser: Number = 0;
-
   constructor(
     private router: Router,
-    private location : Location,
+    private location: Location,
     public activatedRoute: ActivatedRoute,
-    private alumnosService: AlumnosService
-  ) { }
+    private alumnosService: AlumnosService,
+    private dialog: MatDialog,
+  ) {}
 
   ngOnInit(): void {
+
+    // Igual que maestros: cargar esquema
     this.alumno = this.alumnosService.esquemaAlumno();
-    // Rol del usuario
+
+    // Asignar el rol
     this.alumno.rol = this.rol;
 
-    console.log("Datos alumno: ", this.alumno);
+    // MODO EDICIÓN (MISMA LÓGICA QUE MAESTROS)
+    if (this.datos_user && this.datos_user.id) {
+      this.editar = true;
+
+      // Rellenar alumno con los datos existentes (exactamente como maestros)
+      this.alumno = this.datos_user;
+
+      // Convertir fecha si viene como string
+      if (this.alumno.fecha_nacimiento) {
+        this.alumno.fecha_nacimiento = new Date(this.alumno.fecha_nacimiento);
+      }
+    }
+
+    console.log("Alumno cargado:", this.alumno);
   }
 
-  public regresar(){
+  public regresar() {
     this.location.back();
   }
 
-  public registrar(){
-    //Validamos si el formulario está lleno y correcto
+  // Registrar alumno (idéntico a maestros)
+  public registrar() {
+
     this.errors = {};
     this.errors = this.alumnosService.validarAlumno(this.alumno, this.editar);
-    if(Object.keys(this.errors).length > 0){
+
+    if (Object.keys(this.errors).length > 0) {
       return false;
     }
 
-    // Lógica para registrar un nuevo alumno
-    if(this.alumno.password == this.alumno.confirmar_password){
+    if (this.alumno.password == this.alumno.confirmar_password) {
+
       this.alumnosService.registrarAlumno(this.alumno).subscribe(
         (response) => {
-          // Redirigir o mostrar mensaje de éxito
           alert("Alumno registrado exitosamente");
-          console.log("Alumno registrado: ", response);
-          if(this.token && this.token !== ""){
+          console.log("Alumno registrado:", response);
+
+          if (this.token && this.token !== "") {
             this.router.navigate(["alumnos"]);
-          }else{
+          } else {
             this.router.navigate(["/"]);
           }
         },
         (error) => {
-          // Manejar errores de la API
           alert("Error al registrar alumno");
-          console.error("Error al registrar alumno: ", error);
+          console.error("Error al registrar alumno:", error);
         }
       );
-    }else{
+
+    } else {
       alert("Las contraseñas no coinciden");
-      this.alumno.password="";
-      this.alumno.confirmar_password="";
+      this.alumno.password = "";
+      this.alumno.confirmar_password = "";
     }
   }
 
-  public actualizar(){
-    // Lógica para actualizar los datos de un alumno existente
+  public abrirModalActualizar() {
+    const dialogRef = this.dialog.open(ActualizarUserModalComponent, {
+      data: {
+        id: this.idUser,
+        usuario: this.alumno,
+        rol: 'alumno'
+      },
+      width: '328px',
+      height: '288px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(result?.updated) {
+        this.actualizar();
+      }
+    });
   }
 
-  //Funciones para password
-  showPassword()
-  {
-    if(this.inputType_1 == 'password'){
+
+  // Actualizar alumno (igual que actualizarMaestro)
+  public actualizar() {
+    // Validación de los datos
+    this.errors = {};
+    this.errors = this.alumnosService.validarAlumno(this.alumno, this.editar);
+
+    if (Object.keys(this.errors).length > 0) {
+      return false;
+    }
+
+    // Ejecutamos el servicio de actualización
+    this.alumnosService.actualizarAlumno(this.alumno).subscribe(
+      (response) => {
+        alert("Alumno actualizado exitosamente");
+        console.log("Alumno actualizado: ", response);
+        this.router.navigate(["alumnos"]);
+      },
+      (error) => {
+        alert("Error al actualizar alumno");
+        console.error("Error al actualizar alumno: ", error);
+      }
+    );
+  }
+
+
+  // Mostrar contraseña
+  showPassword() {
+    if (this.inputType_1 == 'password') {
       this.inputType_1 = 'text';
       this.hide_1 = true;
-    }
-    else{
+    } else {
       this.inputType_1 = 'password';
       this.hide_1 = false;
     }
   }
 
-  showPwdConfirmar()
-  {
-    if(this.inputType_2 == 'password'){
+  showPwdConfirmar() {
+    if (this.inputType_2 == 'password') {
       this.inputType_2 = 'text';
       this.hide_2 = true;
-    }
-    else{
+    } else {
       this.inputType_2 = 'password';
       this.hide_2 = false;
     }
   }
 
-  //Función para detectar el cambio de fecha
-  public changeFecha(event :any){
-    console.log(event);
-    console.log(event.value.toISOString());
+  public changeFecha(event: any) {
+    if (!event || !event.value) return;
 
-    this.alumno.fecha_nacimiento = event.value.toISOString().split("T")[0];
-    console.log("Fecha: ", this.alumno.fecha_nacimiento);
+    const date = event.value instanceof Date ? event.value : new Date(event.value);
+    this.alumno.fecha_nacimiento = date.toISOString().split("T")[0];
   }
 
   public soloLetras(event: KeyboardEvent) {
     const charCode = event.key.charCodeAt(0);
-    // Permitir solo letras (mayúsculas y minúsculas) y espacio
     if (
-      !(charCode >= 65 && charCode <= 90) &&  // Letras mayúsculas
-      !(charCode >= 97 && charCode <= 122) && // Letras minúsculas
-      charCode !== 32                         // Espacio
+      !(charCode >= 65 && charCode <= 90) &&
+      !(charCode >= 97 && charCode <= 122) &&
+      charCode !== 32
     ) {
       event.preventDefault();
     }
   }
+
 }
