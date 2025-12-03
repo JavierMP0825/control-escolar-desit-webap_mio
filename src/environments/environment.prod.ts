@@ -1,5 +1,5 @@
 // src/environments/environment.prod.ts
 export const environment = {
   production: true,
-  apiUrl: 'https://MendietaJav.pythonanywhere.com/api'
+  url_api: 'https://MendietaJav.pythonanywhere.com/api'
 };
