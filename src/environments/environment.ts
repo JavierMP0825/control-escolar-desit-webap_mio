@@ -4,5 +4,5 @@
 
 export const environment = {
   production: false,
-  url_api: "https://MendietaJav.pythonanywhere.com/api"
+  url_api: "https://mendietapj.pythonanywhere.com/api"
 };
