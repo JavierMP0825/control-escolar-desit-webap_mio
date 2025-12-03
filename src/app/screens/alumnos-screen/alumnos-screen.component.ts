@@ -5,6 +5,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { FacadeService } from 'src/app/services/facade.service';
 import { AlumnosService } from 'src/app/services/alumnos.service';
+import { EliminarUserModalComponent } from 'src/app/modals/eliminar-user-modal/eliminar-user-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-alumnos-screen',
@@ -32,6 +34,7 @@ export class AlumnosScreenComponent implements OnInit, AfterViewInit {
     public facadeService: FacadeService,
     public alumnosService: AlumnosService,
     private router: Router,
+    public dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -90,8 +93,34 @@ export class AlumnosScreenComponent implements OnInit, AfterViewInit {
   }
 
   public delete(idUser: number) {
-    console.log("Eliminar alumno con ID: ", idUser);
-  }
+      //Administrador puede eliminar cualquier alumno
+      //Maestro puede eliminar cualquier alumno
+      //Alumno solo puede eliminarse a sí mismo
+      const userId = Number(this.facadeService.getUserId());
+      if (this.rol === "administrador" || this.rol === "maestros" || (this.rol === "alumnos" && userId === idUser)) {
+        //Si es administrador, maestro o es el mismo alumno, se puede eliminar
+        const dialogRef = this.dialog.open(EliminarUserModalComponent,{
+          data: {id: idUser, rol: 'alumnos'}, //Se pasan valores a través del componente modal
+          height: '288px',
+          width: '328px'
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if(result.isDelete) {
+            console.log("Alumno eliminado correctamente: ", idUser);
+            alert("Alumno eliminado correctamente.");
+            //Refrescar la pagina
+            window.location.reload();
+          } else {
+            alert("Alumno no se a podido eliminar.");
+            console.log("No se eliminó al alumno");
+          }
+
+        });
+      }else {
+        alert("No tienes permisos para eliminar a este alumno.");
+      }
+    }
 }
 
 export interface DatosAlumno {

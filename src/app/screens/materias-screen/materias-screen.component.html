@@ -1,0 +1,138 @@
+<div class="wrapper main-content-materias">
+    <div class="header-home-materias"></div>
+
+    <div class="body-materias">
+        <!-- Encabezado -->
+        <div class="row mt-5 mb-5">
+            <div class="col-12">
+                <span class="title-perfil-materias">Bienvenido {{ name_user }}</span><br>
+                <span class="title-perfil-materias">{{ rol }}</span>
+            </div>
+        </div>
+
+        <!-- Contenedor principal -->
+        <div class="container">
+            <div class="row mt-3 mb-5" style="text-align: center;">
+                <div class="col-12">
+                    <div class="alert alert-primary" role="alert">
+                        <span class="title-table-materias">Lista de materias registradas</span>
+                    </div>
+                </div>
+
+                <!-- Búsqueda -->
+                <div class="col-12 mb-3 text-end">
+                    <input matInput placeholder="Filtrar materias" (keyup)="applyFilter($event)" class="form-control" style="max-width: 300px; display: inline-block;">
+                </div>
+
+                <!-- Tabla -->
+                <ng-container *ngIf="lista_materias.length > 0; else noData">
+                    <div class="table-scroll-wrapper-materias">
+                        <div class="mat-elevation-z8">
+                            <table mat-table [dataSource]="dataSource" matSort style="min-width: 1200px; width: 100%;">
+
+                                <!-- NRC -->
+                                <ng-container matColumnDef="nrc">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> NRC </th>
+                                    <td mat-cell *matCellDef="let mat"> {{ mat.nrc }} </td>
+                                </ng-container>
+
+                                <!-- Nombre -->
+                                <ng-container matColumnDef="nombre_materia">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>
+                                    <td mat-cell *matCellDef="let mat"> {{ mat.nombre_materia }} </td>
+                                </ng-container>
+
+                                <!-- Sección -->
+                                <ng-container matColumnDef="section">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Sección </th>
+                                    <td mat-cell *matCellDef="let mat"> {{ mat.section }} </td>
+                                </ng-container>
+
+                                <!-- Programa educativo -->
+                                <ng-container matColumnDef="programa_educativo">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Programa </th>
+                                    <td mat-cell *matCellDef="let mat"> {{ mat.programa_educativo }} </td>
+                                </ng-container>
+
+                                <!-- Maestro -->
+                                <ng-container matColumnDef="maestro">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Maestro </th>
+                                    <td mat-cell *matCellDef="let mat">
+                                        {{ mat.maestro_nombre }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Horario -->
+                                <ng-container matColumnDef="hora_inicio">
+                                    <th mat-header-cell *matHeaderCellDef> Hora inicio </th>
+                                    <td mat-cell *matCellDef="let row"> {{ row.hora_inicio }} </td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="hora_fin">
+                                    <th mat-header-cell *matHeaderCellDef> Hora fin </th>
+                                    <td mat-cell *matCellDef="let row"> {{ row.hora_fin }} </td>
+                                </ng-container>
+
+                                <!-- Días -->
+                                <ng-container matColumnDef="dias_json">
+                                    <th mat-header-cell *matHeaderCellDef> Días </th>
+                                    <td mat-cell *matCellDef="let mat">
+                                        {{ mat.dias_json.join(', ') }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Salón -->
+                                <ng-container matColumnDef="salon">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Salón </th>
+                                    <td mat-cell *matCellDef="let mat"> {{ mat.salon }} </td>
+                                </ng-container>
+
+                                <!-- Créditos -->
+                                <ng-container matColumnDef="creditos">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Créditos </th>
+                                    <td mat-cell *matCellDef="let mat"> {{ mat.creditos }} </td>
+                                </ng-container>
+
+                                <!-- Editar -->
+                                <ng-container matColumnDef="editar">
+                                    <th mat-header-cell *matHeaderCellDef> Editar </th>
+                                    <td mat-cell *matCellDef="let mat" class="td-editar-materias">
+                                        <i class="bi bi-pencil-square" (click)="goEditar(mat.id)"></i>
+                                    </td>
+                                </ng-container>
+
+                                <!-- Eliminar -->
+                                <ng-container matColumnDef="eliminar">
+                                    <th mat-header-cell *matHeaderCellDef> Eliminar </th>
+                                    <td mat-cell *matCellDef="let mat" class="td-eliminar-materias">
+                                        <i class="bi bi-trash3-fill" (click)="delete(mat.id)"></i>
+                                    </td>
+                                </ng-container>
+
+                                <!-- Rows -->
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                            </table>
+                        </div>
+
+                        <!-- Paginador -->
+                        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+                    </div>
+                </ng-container>
+
+                <!-- Sin datos -->
+                <ng-template #noData>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-warning" role="alert">
+                                No hay materias registradas.
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+
+            </div>
+        </div>
+    </div>
+</div>

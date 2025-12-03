@@ -40,9 +40,9 @@ export class LoginScreenComponent implements OnInit {
         const role = response.role;
         if (role === 'administrador') {
           this.router.navigate(["/administrador"]);
-        } else if (role === 'maestro') {
+        } else if (role === 'maestros') {
           this.router.navigate(["/maestros"]);
-        } else if (role === 'alumno') {
+        } else if (role === 'alumnos') {
           this.router.navigate(["/alumnos"]);
         } else {
           this.router.navigate(["home"]);
