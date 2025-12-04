@@ -1,5 +1,5 @@
 // src/environments/environment.prod.ts
 export const environment = {
   production: true,
-  url_api: 'https://mendietapj.pythonanywhere.com'
+  url_api: 'https://mendietapj.pythonanywhere.com/api'
 };
